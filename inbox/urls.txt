@@ -1,0 +1,4 @@
+# One job posting URL per line. Lines starting with # are ignored.
+# `python -m app.main process-inbox` (or the weekly GitHub Actions workflow)
+# processes every URL here that isn't already in the database, then leaves
+# this file alone - it's an append-only inbox, not something the agent edits.

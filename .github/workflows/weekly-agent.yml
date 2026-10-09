@@ -1,0 +1,46 @@
+name: Weekly agent run
+
+# Runs on a schedule (every Monday morning) and can also be triggered
+# manually from the Actions tab - this is the project's actual "deployment":
+# a scheduled script with visible logging and a committed artifact, rather
+# than a public URL (see README "Deployment").
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Process inbox
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m app.main process-inbox
+
+      - name: Generate weekly summary
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m app.main report
+
+      - name: Commit updated report
+        run: |
+          git config user.name "auto-agent-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add reports/latest-summary.md
+          git diff --cached --quiet || git commit -m "chore: refresh weekly summary [skip ci]"
+          git push
