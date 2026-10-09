@@ -68,8 +68,16 @@ class GeminiAgentSession:
         self._types = types
         declarations = [types.FunctionDeclaration(**decl) for decl in TOOL_DECLARATIONS]
         tool = types.Tool(function_declarations=declarations)
-        client = genai.Client(api_key=api_key)
-        self._chat = client.chats.create(
+        # Keep a strong reference to the Client on self - a Client created as
+        # a bare local here would otherwise be garbage-collected as soon as
+        # __init__ returns (nothing else holds it), which closes its
+        # underlying httpx client and makes every later self._chat.send_message()
+        # call in step() fail with "Cannot send a request, as the client has
+        # been closed." This is a documented google-genai gotcha, not
+        # something specific to this project - see
+        # https://github.com/googleapis/python-genai/issues/1763.
+        self._client = genai.Client(api_key=api_key)
+        self._chat = self._client.chats.create(
             model=model_name,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION,
