@@ -193,6 +193,25 @@ cat reports/latest-summary.md
 
 Or process one URL directly: `python -m app.main process-url <url>`.
 
+## Troubleshooting notes from the first real run
+
+- **`400 INVALID_ARGUMENT: Function call is missing a thought_signature in
+  functionCall parts`** on the second tool call in a run. Gemini's newer
+  "thinking" models attach a `thought_signature` to each `function_call`
+  part and require it to be echoed back, unmodified, on every later turn of
+  that conversation (see
+  [Thought signatures](https://ai.google.dev/gemini-api/docs/thinking#signatures)).
+  `requirements.txt` had pinned `google-genai==1.3.0` - from early in that
+  SDK's life, well before `thought_signature` existed as a field on `Part`
+  at all, so the SDK silently dropped it when replaying chat history for the
+  next turn, and the newer model backend rejected the resulting request.
+  Fixed by bumping the pin to `google-genai==2.29.0`, whose `Part` model
+  actually defines `thought_signature` - at which point `chats.create()`'s
+  built-in history replay (which is what `agent.py`'s `GeminiAgentSession`
+  relies on) carries it correctly with no code change needed. If you hit
+  this again after upgrading, run `pip show google-genai` and confirm it's
+  not shadowed by an older cached wheel.
+
 ## Tests
 
 ```bash
