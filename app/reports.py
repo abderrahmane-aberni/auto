@@ -63,12 +63,19 @@ def generate_summary_markdown(db: Session, *, since_days: int = 7) -> str:
     if postings:
         lines.append("## Postings")
         lines.append("")
-        lines.append("| Role | Company | Sponsor licensed? | Salary | Status |")
+        # The matched register name + score are shown, not just a yes/no -
+        # fuzzy matching is a judgment call (see README "Matching: why fuzzy,
+        # and how"), and a bare checkmark would hide a bad match instead of
+        # letting you catch it.
+        lines.append("| Role | Company | Sponsor match | Salary | Status |")
         lines.append("|---|---|---|---|---|")
         for p in postings:
-            sponsor_cell = (
-                "✅" if p.sponsor_licensed else ("❌" if p.sponsor_checked else "—")
-            )
+            if p.sponsor_licensed and p.sponsor_match_name:
+                sponsor_cell = f"Yes - {p.sponsor_match_name} ({p.sponsor_match_score:.0f}%)"
+            elif p.sponsor_checked:
+                sponsor_cell = "Not found"
+            else:
+                sponsor_cell = "—"
             lines.append(
                 f"| {p.role or '—'} | {p.company or '—'} | {sponsor_cell} | "
                 f"{p.salary_text or '—'} | {p.status} |"
