@@ -10,3 +10,4 @@ __pycache__/
 # Regenerate with scripts/update_sponsor_register.py. The small fixture copy
 # tests run against lives in tests/fixtures/ and IS committed.
 data/sponsor_register.csv
+venv/

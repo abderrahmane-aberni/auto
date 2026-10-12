@@ -46,6 +46,20 @@ def normalize_company_name(name: str) -> str:
     return name
 
 
+# Below this length, a "match" is essentially coincidental. A found-in-
+# production bug: "DataAnnotation" fuzzy-matched "AA LIMITED" at 100%
+# confidence, because once "AA LIMITED" is suffix-stripped down to "aa",
+# those two letters just happen to appear back-to-back inside
+# "dataannotation" ("dat-AA-nnotation"). Any 2-3 character string will turn
+# up *somewhere* in almost any sufficiently long string by pure chance - the
+# windowed/substring boost below is only meaningful evidence once the
+# fragment being matched is long enough that a coincidental hit becomes
+# unlikely. Below this, only the plain whole-string ratio is used, which
+# correctly scores "aa" vs "dataannotation" as a poor match (their lengths
+# are too different for a high ratio).
+_MIN_FRAGMENT_LEN_FOR_PARTIAL_MATCH = 4
+
+
 def _windowed_partial_ratio(shorter: str, longer: str) -> float:
     """How well `shorter` matches *some* substring of `longer`, not just the
     whole string. Job postings routinely refer to a company by a colloquial
@@ -53,6 +67,9 @@ def _windowed_partial_ratio(shorter: str, longer: str) -> float:
     full legal name ("STRIPE PAYMENTS UK LIMITED") - a plain whole-string
     ratio scores that low purely because of the length difference, which
     would make the register check nearly useless in practice.
+
+    Only called when `shorter` is at least `_MIN_FRAGMENT_LEN_FOR_PARTIAL_MATCH`
+    characters - see that constant's comment for why.
     """
     if not shorter:
         return 0.0
@@ -80,6 +97,8 @@ def _similarity_score(query_norm: str, candidate_norm: str) -> float:
         shorter, longer = query_norm, candidate_norm
     else:
         shorter, longer = candidate_norm, query_norm
+    if len(shorter) < _MIN_FRAGMENT_LEN_FOR_PARTIAL_MATCH:
+        return full_ratio
     partial_ratio = _windowed_partial_ratio(shorter, longer)
     return max(full_ratio, partial_ratio)
 

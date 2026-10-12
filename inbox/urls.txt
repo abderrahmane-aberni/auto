@@ -2,3 +2,4 @@
 # `python -m app.main process-inbox` (or the weekly GitHub Actions workflow)
 # processes every URL here that isn't already in the database, then leaves
 # this file alone - it's an append-only inbox, not something the agent edits.
+https://www.dataannotation.tech/job-board/software-engineer?metadata_cid=1865066&md_nid=112171&metadata_aid=210370&projects=PROG_SA&worker_src=G&utm_source=google&utm_medium=display&utm_campaign=24106326687&utm_adgroup=199750982820&utm_content=819976586286&cid=24106326687&aid=819976586286&keyword=freelance%20software%20engineer&matchtype=b&utm_campaign=24106326687&gad_source=1&gad_campaignid=24106326687&gbraid=0AAAAAqBNCsVwU4BrOHbs2bgNldbearMPB&gclid=CjwKCAjwoaLWBhAWEiwAnyitu4GvhctmMoX4PnUDeYZ97cUTFAUB7bHeQKutG_hx2MTR7d9MBplr_hoCNwMQAvD_BwE

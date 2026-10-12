@@ -137,6 +137,16 @@ demand:
 - **The model skips `check_duplicate` and tries to extract a URL already in
   the database.** The DB's unique constraint - not the agent's cooperation -
   is what actually prevents the duplicate row (see Guardrails above).
+- **The sponsor-register fuzzy matcher found a coincidental match.** On the
+  very first real job posting run against the live register, "DataAnnotation"
+  matched "AA LIMITED" at 100% confidence - not because they're related, but
+  because "aa" (what "AA LIMITED" reduces to after suffix-stripping) happens
+  to appear back-to-back inside "dataannotation". Any 2-3 character fragment
+  will coincidentally turn up inside almost any longer string. Fixed with a
+  minimum-fragment-length guard (see "Matching: why fuzzy, and how" below) -
+  this is a real false positive that was caught by actually running the
+  thing against the real register, not something a fixture-only test suite
+  would have surfaced.
 
 ## Why the register isn't fetched live
 
@@ -176,6 +186,16 @@ rewards a short colloquial name being a clean match against *part of* a
 longer legal name. `SPONSOR_MATCH_THRESHOLD` (default 85) controls how
 confident a match has to be before it's reported as "licensed" - below it,
 the result is honestly "not found" rather than a guess.
+
+That partial-match boost only applies when the shorter name is at least
+`_MIN_FRAGMENT_LEN_FOR_PARTIAL_MATCH` (4) characters long. Below that, a
+"match" is essentially coincidental - any 2-3 character fragment turns up
+*somewhere* inside almost any longer string by pure chance, which is exactly
+what happened in the real false positive documented under "Failure cases"
+above ("DataAnnotation" vs "AA LIMITED"). It's a deliberate precision-over-
+recall tradeoff: a short abbreviation that only matches part of a longer
+name is treated as not confident enough to report as "licensed," since a
+wrong "yes" here is worse than a wrong "not found."
 
 ## Running it
 

@@ -8,7 +8,7 @@ CSV_PATH = FIXTURES_DIR / "sample_sponsor_register.csv"
 
 def test_loads_fixture_csv():
     register = load_sponsor_register(CSV_PATH)
-    assert len(register) == 10
+    assert len(register) == 11
 
 
 def test_missing_file_raises_with_a_helpful_message():
@@ -47,6 +47,19 @@ def test_empty_company_name_is_not_matched():
     register = load_sponsor_register(CSV_PATH)
     match = register.lookup("", threshold=85)
     assert match.licensed is False
+
+
+def test_unrelated_long_name_does_not_coincidentally_match_a_short_one():
+    """Regression test for a real false positive hit in production:
+    "DataAnnotation" fuzzy-matched "AA LIMITED" at 100% confidence, because
+    once suffix-stripped to "aa", those two letters happen to sit back to
+    back inside "dataannotation" ("dat-AA-nnotation"). See
+    _MIN_FRAGMENT_LEN_FOR_PARTIAL_MATCH in sponsor_register.py.
+    """
+    register = load_sponsor_register(CSV_PATH)
+    match = register.lookup("DataAnnotation", threshold=85)
+    assert match.licensed is False
+    assert match.matched_name != "AA LIMITED"
 
 
 def test_threshold_controls_strictness():
