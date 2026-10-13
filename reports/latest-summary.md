@@ -1,4 +1,4 @@
-# Auto - weekly summary (2026-10-09)
+# Auto - weekly summary (2026-10-13)
 
 Covering job postings processed in the last 7 days.
 
