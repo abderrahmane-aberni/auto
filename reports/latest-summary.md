@@ -1,14 +1,9 @@
-# Auto - weekly summary (2026-10-13)
+# Auto - weekly summary (2026-10-19)
 
 Covering job postings processed in the last 7 days.
 
-- **Processed:** 1
-- **Sponsor-register matches:** 1/1 companies checked are on the register (100.0%)
+- **Processed:** 0
 - **Postings that mention sponsorship explicitly:** 0
-- **Postings with a stated salary:** 1/1
+- **Postings with a stated salary:** 0
 
-## Postings
-
-| Role | Company | Sponsor match | Salary | Status |
-|---|---|---|---|---|
-| Software Engineer | DataAnnotation | Yes - AA Limited (100%) | $40 – $150+ / hour | ok |
+No job postings were added to `inbox/urls.txt` in this window - nothing to report.
